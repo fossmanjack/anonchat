@@ -1,23 +1,28 @@
 import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import * as Chat from '../slices/chatSlice';
 
-export default function ChatFooter({ socket }) {
-	const [ message, setMessage ] = useState('');
+export default function ChatFooter() {
+	const [ msgTxt, setMsgTxt ] = useState('');
+	const dispatch = useDispatch();
+	const { socket } = useSelector(S => S.socket);
+	const { username } = useSelector(S => S.user);
 
 	const handleSendMessage = e => {
-		const user = localStorage.getItem('username');
+		//const user = localStorage.getItem('username');
 
 		e.preventDefault();
-		console.log({ user, message });
-		if(message.trim() && user) {
+		console.log({ username, msgTxt });
+		if(msgTxt.trim() && username) {
 			socket.emit('message', {
-				user,
-				text: message,
+				username,
+				text: msgTxt,
 				mid: `${socket.id}-${Math.random()}`,
 				sid: socket.id,
 				timestamp: Date.now()
 			});
 		}
-		setMessage('');
+		setMsgTxt('');
 	}
 
 	return (
@@ -27,8 +32,8 @@ export default function ChatFooter({ socket }) {
 					type='text'
 					placeholder='Input message here'
 					className='message'
-					value={message}
-					onChange={e => setMessage(e.target.value)}
+					value={msgTxt}
+					onChange={e => setMsgTxt(e.target.value)}
 				/>
 				<button className='sendBtn'>Send</button>
 			</form>

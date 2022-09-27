@@ -1,23 +1,26 @@
 import { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import ChatBar from '../components/ChatBar';
 import ChatBody from '../components/ChatBody';
 import ChatFooter from '../components/ChatFooter';
+import * as Chat from '../slices/chatSlice';
 
-export default function ChatScreen({ socket }) {
-	const [ messages, setMessages ] = useState([]);
+export default function ChatScreen() {
+	const { socket } = useSelector(S => S.socket);
+	const dispatch = useDispatch();
 
 	useEffect(_ => {
 		socket.on('messageResponse', data => {
-			setMessages([ ...messages, data ])
+			dispatch(Chat.addMessage(data));
 		});
-	}, [ socket, messages ]);
+	}, [ socket ]);
 
 	return (
 		<div className='chat'>
-			<ChatBar socket={socket} />
+			<ChatBar />
 			<div className='chat__main'>
-				<ChatBody messages={messages} socket={socket} />
-				<ChatFooter socket={socket} />
+				<ChatBody />
+				<ChatFooter />
 			</div>
 		</div>
 	);
