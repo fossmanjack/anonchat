@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-	hostname: 'localhost:7777',
+	hostname: '',
 }
 
 const socketSlice = createSlice({
