@@ -1,17 +1,17 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-	socket: null,
+	hostname: 'localhost:7777',
 }
 
 const socketSlice = createSlice({
 	name: 'socket',
 	initialState,
 	reducers: {
-		setSocket: (sState, action) => {
+		setHostname: (sState, action) => {
 			return {
 				...sState,
-				socket: action.payload
+				hostname: action.payload
 			}
 		}
 	}
@@ -20,5 +20,5 @@ const socketSlice = createSlice({
 export const socketReducer = socketSlice.reducer;
 
 export const {
-	setSocket,
+	setHostname
 } = socketSlice.actions;

@@ -1,8 +1,10 @@
+import { v4 as uuidv4 } from 'uuid';
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
+	uid: uuidv4(),
 	username: '',
-	users: []
+	users: {}
 }
 
 const userSlice = createSlice({
@@ -10,12 +12,16 @@ const userSlice = createSlice({
 	initialState,
 	reducers: {
 		setUsername: (uState, action) => {
+			// expects username string as payload
+			console.log('setUsername:', action.payload);
 			return {
 				...uState,
 				username: action.payload
 			}
 		},
 		setUsers: (uState, action) => {
+			// expects server's _Users object as payload
+			console.log('setUsers', action.payload);
 			return {
 				...uState,
 				users: action.payload

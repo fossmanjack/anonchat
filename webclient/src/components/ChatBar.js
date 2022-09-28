@@ -1,4 +1,7 @@
+import { useSelector } from 'react-redux';
+
 export default function ChatBar() {
+	const { users } = useSelector(S => S.user);
 
 	return (
 		<div className='chat__sidebar'>
@@ -7,10 +10,9 @@ export default function ChatBar() {
 			<div>
 				<h4 className='chat__header'>Active Users</h4>
 				<div className='chat__users'>
-					<p>User 1</p>
-					<p>User 2</p>
-					<p>User 3</p>
-					<p>User 4</p>
+					{ Object.keys(users).map(userKey => (
+						<p key={userKey}>{users[userKey].username}</p>
+					))}
 				</div>
 			</div>
 		</div>

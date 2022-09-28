@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
 	messages: [],
+	session: []
 }
 
 const chatSlice = createSlice({
@@ -18,6 +19,17 @@ const chatSlice = createSlice({
 					action.payload
 				]
 			}
+		},
+		addSession: (cState, action) => {
+			// for local notifications
+			console.log('addSession:', action);
+			return {
+				...cState,
+				session: [
+					...cState.session,
+					action.payload
+				]
+			}
 		}
 	}
 });
@@ -25,6 +37,7 @@ const chatSlice = createSlice({
 export const chatReducer = chatSlice.reducer;
 
 export const {
-	addMessage
+	addMessage,
+	addSession
 } = chatSlice.actions;
 

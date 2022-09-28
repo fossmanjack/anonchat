@@ -1,0 +1,10 @@
+- [x] display active users
+- [x] auto-scroll
+- [ ] notify users
+- [x] slash commands
+- [ ] rooms
+- [ ] rooms in tabs
+- [ ] DMs
+- [x] uid instead of username
+- [ ] persist
+- [ ] replay/reconcile history (?)
