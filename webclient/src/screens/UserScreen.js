@@ -3,33 +3,50 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useSocket } from '../app/socket';
 import * as Socket from '../slices/socketSlice';
+import * as User from '../slices/userSlice';
 
 export default function UserScreen() {
 	const navigate = useNavigate();
 	const { username: reduxUser, uid } = useSelector(S => S.user);
 	const { hostname: reduxHost } = useSelector(S => S.socket);
-	const [ username, setUsername ] = useState('');
+	const [ username, setUsername ] = useState(reduxUser);
 	const [ hostname, setHostname ] = useState(reduxHost);
+	const [ error, setError ] = useState('');
 	const dispatch = useDispatch();
 	//const socket = useSelector(S => S.socket).socket;
-	const socket = useSocket();
+	//const socket = useSocket();
+	const { socket, socketError } = useSocket();
 
 	console.log('userScreen:', reduxUser);
 
 	const handleSubmit = e => {
 		e.preventDefault();
 		if(hostname !== reduxHost) dispatch(Socket.setHostname(hostname));
-		socket.emit('userChange', { uid, username });
+		if(username !== reduxUser) dispatch(User.setUsername(username));
 		//dispatch(User.setUsername(username));
 		//localStorage.setItem('username', username);
 		//navigate('/chat');
 	}
 
 	useEffect(_ => {
-		if(reduxUser) navigate('/chat');
-	}, [ reduxUser, navigate ]);
+		if(reduxUser && socket.onAny) {
+			console.log('Attempting to connect with socketID', socket.id);
+			socket.auth = { username: reduxUser, uid };
+			socket.connect();
+		}
+	}, [ reduxUser, socket ]);
+
+	useEffect(_ => {
+		if(socket && socket.connected) navigate('/chat');
+	}, [ socket, socket.connected, navigate ]);
+
+	useEffect(_ => {
+		if(socket && socket.error) setError(socket.error);
+		else setError('');
+	}, [ socket ]);
 
 	return (
+		<>
 		<form className='home__container' onSubmit={handleSubmit}>
 			<h2 className='home__header'>Sign in to open chat...</h2>
 			<label htmlFor='username'>Username</label>
@@ -53,5 +70,7 @@ export default function UserScreen() {
 			/>
 			<button className='home__cta'>Let's Go!</button>
 		</form>
+		<p>{error}</p>
+		</>
 	);
 }

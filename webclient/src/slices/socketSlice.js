@@ -1,7 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { DEFAULT_HOST } from '../localData/defaults';
 
 const initialState = {
-	hostname: '',
+	hostname: DEFAULT_HOST,
 }
 
 const socketSlice = createSlice({

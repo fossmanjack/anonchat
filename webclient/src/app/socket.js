@@ -8,16 +8,23 @@ const SocketContext = createContext();
 
 export function SocketProvider(props) {
 	const { hostname } = useSelector(S => S.socket);
-	const { username, uid } = useSelector(S => S.user);
-	const [ socket, setSocket ] = useState(null);
+	const { username, uid, users } = useSelector(S => S.user);
+	// don't make it a null connection or we get constant server error events, not sure exactly why
+	//const [ socket, setSocket ] = useState(SocketIO.io(hostname, { autoConnect: false }));
+	const [ socket, setSocket ] = useState({}); // needs to be an object or stuff breaks elsewhere
+	const [ socketError, setSocketError ] = useState({}); // see above
+	//const [ socketError, setSocketError ] = useState(null);
 	const dispatch = useDispatch();
 	const isLoaded = useRef(false);
 
 	// if hostname changes, update socket
 	useEffect(_ => {
 		if(isLoaded.current) {
-			console.log('Updating socket...');
-			hostname && setSocket(SocketIO.connect(hostname));
+			console.log('Updating socket:', hostname);
+			//hostname && setSocket(SocketIO.connect(hostname));
+			// instead let's control the connection manually when the user is
+			// logged in
+			hostname && setSocket(SocketIO.io(hostname, { autoConnect: false }));
 		} else {
 			isLoaded.current = true;
 		}
@@ -25,7 +32,22 @@ export function SocketProvider(props) {
 
 	// trying to put all the response parsing here
 	useEffect(_ => {
-		if(socket) {
+		if(socket.onAny) {
+			// catch-all listener
+			socket.onAny((event, ...args) => {
+				console.log('socket onAny:', event, args);
+			});
+
+			socket.on('connect_error', err => {
+				console.log('connect_error:', err);
+				//if(err.message.substring(0, 0) === 'U') {
+				if(err.message[0] === 'U') {
+					console.log('Socket Error:', err.message);
+					dispatch(User.setUsername(''));
+					setSocketError(err);
+				}
+			});
+
 			socket.on('messageResponse', data => {
 				console.log('messageResponse', data);
 				dispatch(Chat.addMessage(data));
@@ -45,11 +67,27 @@ export function SocketProvider(props) {
 					dispatch(User.setUsername(data[socket.id].username));
 				}
 			});
+
+			socket.on('directMessage', ({ from, text }) => {
+				const sender = users[from].username;
+				const sendID = users[from].uid;
+
+				dispatch(Chat.addMessage({
+					session: false,
+					direct: true,
+					sid: from,
+					mid: `${from}-${Math.random()}`,
+					timestamp: Date.now(),
+					username: sender,
+					uid: sendID,
+					text: `<<< From @${sender}: ${text}`
+				}));
+			});
 		}
 	}, [ socket ]);
 
 	return (
-		<SocketContext.Provider value={socket}>
+		<SocketContext.Provider value={{ socket, socketError }}>
 			{props.children}
 		</SocketContext.Provider>
 	);

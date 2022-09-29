@@ -5,12 +5,16 @@ import { useSocket } from '../app/socket';
 
 export default function ChatFooter() {
 	const [ msgTxt, setMsgTxt ] = useState('');
+	const reduxState = useSelector(S => S);
 	const dispatch = useDispatch();
 	//const { socket } = useSelector(S => S.socket);
-	const socket = useSocket();
-	const { uid, username } = useSelector(S => S.user);
+	const { socket, socketError } = useSocket();
+	const { uid, username, users } = useSelector(S => S.user);
 
-	const handleTyping = _ => socket.emit('typing', `${username} is typing...`);
+	const handleTyping = _ => {
+		if(msgTxt) socket.emit('typing', `${username} is typing...`);
+		else socket.emit('typing', '');
+	}
 
 	const handleSendMessage = e => {
 		//const user = localStorage.getItem('username');
@@ -44,6 +48,9 @@ export default function ChatFooter() {
 			case '/nick':
 				handleNickChange(args);
 				break;
+			case '/msg':
+				handleDM(args);
+				break;
 			default:
 				dispatch(Chat.addSession({
 					session: true,
@@ -75,6 +82,39 @@ export default function ChatFooter() {
 		}
 	}
 
+	const handleDM = args => {
+		const [ target, ...text ] = args;
+
+		const tid = Object.keys(users).find(key => users[key].username === target);
+		if(!tid) {
+			dispatch(Chat.addSession({
+				session: true,
+				sid: socket.id,
+				mid: `${socket.id}-${Math.random()}`,
+				timestamp: Date.now(),
+				username,
+				uid,
+				text: `*** User ${target} not found!`
+			}));
+		} else {
+			socket.emit('directMessage', { tid, text });
+			dispatch(Chat.addMessage({
+				session: false,
+				direct: true,
+				sid: socket.id,
+				mid: `${socket.id}-${Math.random()}`,
+				timestamp: Date.now(),
+				username,
+				uid,
+				text: `>>> You to @${target}: ${text}`
+			}));
+		}
+	}
+
+	const handleDump = _ => {
+		console.log('Dumping redux state:', reduxState);
+	}
+
 	return (
 		<div className='chat__footer'>
 			<form className='form' onSubmit={handleSendMessage}>
@@ -85,9 +125,12 @@ export default function ChatFooter() {
 					value={msgTxt}
 					onChange={e => setMsgTxt(e.target.value)}
 					onKeyDown={handleTyping}
+					onBlur={handleTyping}
 				/>
 				<button className='sendBtn'>Send</button>
 			</form>
+			<button onClick={handleDump}>Dump</button>
+			<p>{socketError.message}</p>
 		</div>
 	);
 }

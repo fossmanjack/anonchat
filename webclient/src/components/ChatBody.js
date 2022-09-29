@@ -7,7 +7,7 @@ import { useSocket } from '../app/socket';
 export default function ChatBody({ lastMessageRef }) {
 	const navigate = useNavigate();
 	//const { socket } = useSelector(S => S.socket);
-	const socket = useSocket();
+	const { socket } = useSocket();
 	const { messages: storeMsg, session } = useSelector(S => S.chat);
 	const [ messages, setMessages ] = useState([]);
 	const [ typingInfo, setTypingInfo ] = useState([]);
