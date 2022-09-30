@@ -162,7 +162,7 @@ code {
 
 .message__recipient {
 	background-color: #f5ccc2;
-	width: 300px;
+	max-width: 80%;
 	padding: 10px;
 	border-radius: 10px;
 	font-size: 15px;
@@ -170,7 +170,16 @@ code {
 
 .message__sender {
 	background-color: rgb(194, 243, 194);
-	max-width: 300px;
+	max-width: 80%;
+	padding: 10px;
+	border-radius: 10px;
+	margin-left: auto;
+	font-size: 15px;
+}
+
+.messageSession {
+	background-color: #add8e6;
+	max-width: 95%;
 	padding: 10px;
 	border-radius: 10px;
 	margin-left: auto;

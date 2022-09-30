@@ -40,7 +40,6 @@ export function SocketProvider(props) {
 
 			socket.on('connect_error', err => {
 				console.log('connect_error:', err);
-				//if(err.message.substring(0, 0) === 'U') {
 				if(err.message[0] === 'U') {
 					console.log('Socket Error:', err.message);
 					dispatch(User.setUsername(''));
@@ -49,7 +48,6 @@ export function SocketProvider(props) {
 			});
 
 			socket.on('messageResponse', data => {
-				console.log('messageResponse', data);
 				dispatch(Chat.addMessage(data));
 			});
 
@@ -62,14 +60,20 @@ export function SocketProvider(props) {
 				// NOTE: if the server has { uid: username, uid: username } and we
 				// keep a local copy of that object, there's no real need to store
 				// an independent username variable
-				if(data[socket.id][username] !== username) {
+				if(data[uid] !== username) {
 					console.log('username changed!', data, socket.id)
-					dispatch(User.setUsername(data[socket.id].username));
+					dispatch(User.setUsername(data[uid]));
 				}
 			});
 
-			socket.on('directMessage', ({ from, text }) => {
-				const sender = users[from].username;
+			socket.on('directMessage', message => {
+				console.log('DM received', message);
+
+				dispatch(Chat.setLast(message.sender));
+				dispatch(Chat.addMessage(message));
+			});
+/*
+				const sender = users[sender];
 				const sendID = users[from].uid;
 
 				dispatch(Chat.addMessage({
@@ -83,6 +87,7 @@ export function SocketProvider(props) {
 					text: `<<< From @${sender}: ${text}`
 				}));
 			});
+*/
 		}
 	}, [ socket ]);
 

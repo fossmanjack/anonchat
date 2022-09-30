@@ -1,8 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
+import * as Utils from '../app/utils';
 
 const initialState = {
 	messages: [],
-	session: []
+	session: [],
+	last: ''
 }
 
 const chatSlice = createSlice({
@@ -30,14 +32,38 @@ const chatSlice = createSlice({
 					action.payload
 				]
 			}
+		},
+		setLast: (cState, action) => {
+			// last DM received from
+			return {
+				...cState,
+				last: action.payload
+			}
 		}
 	}
 });
+
+/*
+const newMessage = ({ sid, session, direct, content }) => {
+	return {
+		timestamp: Date.now(),
+		sid,
+		session,
+		direct,
+		mid: `${sid}-${Utils.genuuid(12)}`;
+
+			dispatch(Chat.addSession({
+				sid: socket.id,
+				username,
+				uid,
+				text: `*** User ${target} not found!`
+*/
 
 export const chatReducer = chatSlice.reducer;
 
 export const {
 	addMessage,
-	addSession
+	addSession,
+	setLast
 } = chatSlice.actions;
 

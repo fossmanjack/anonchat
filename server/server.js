@@ -6,7 +6,9 @@ app.use(cors());
 
 const http = require('http').Server(app);
 const PORT = 7777;
-let _Users = {}; // { socket.id: { uid, username }, socket.id: { uid, username } }
+// _Users is for clients, _Sockets is for the server
+let _Users = {};  // { uid: username, uid: username }
+let _Sockets = {}; // { uid: sid, uid: sid }
 
 const io = require('socket.io')(http, {
 	cors: {
@@ -20,55 +22,49 @@ io.use((socket, next) => {
 	if(!username || !uid) {
 		console.log('USER ERROR:', username, uid);
 		return next(new Error('U01: Username and uid required!'));
-	//} else if(Object.values(_Users).find(val => val.username === username)) {
-	} /*else if(Object.values(_Users).find(val => val.username === username)) {
-		key = Object.keys(_Users).find(key => _Users[key].username === username);
-		if(key !== socket.id) {
-			console.log('DUPLICATE USER:', username, key, socket.id);
-			return next(new Error('U02: Username already in use!'));
-		}
-	} */
-	else {
-		socket.username = username;
-		socket.uid = uid;
-		_Users = { ..._Users, [socket.id]: { uid, username }};
-		next();
 	}
+
+	// uid is "immutable" (once persistence comes online)
+	_Users = { ..._Users, [uid]: username };
+	_Sockets = { ..._Sockets, [uid]: socket.id };
+	socket.uid = uid;
+	socket.username = username;
+
+	next();
 });
 
 io.on('connection', socket => {
-	console.log(`***: ${socket.id} user has connected!`);
+	const { uid, username, id: sid } = socket;
+	console.log(`*** ${username} (${uid}) has connected with sid ${sid}`);
 	io.emit('userChangeResponse', _Users);
 
+	socket.onAny((event, ...args) => {
+		console.log('RECEIVED:\n\tsid:', socket.id, '\n\tevent:', event, '\n\targs:', args);
+	});
+
 	socket.on('message', data => {
-		console.log('message:', data);
 		io.emit('messageResponse', data);
 	});
 
 	socket.on('userChange', data => {
-		console.log('userChange:', data);
-
-		// expects { uid, username }
-		_Users = { ..._Users, [socket.id]: data };
+		// expects username
+		_Users = { ..._Users, [uid]: data };
 
 		io.emit('userChangeResponse', _Users);
 	});
 
 	socket.on('typing', data => {
-		console.log('typing:', data);
 		io.emit('typingResponse', data);
 	});
 
-	socket.on('directMessage', ({ tid, text }) => {
-		socket.to(tid).emit('directMessage', {
-			from: socket.id,
-			text
-		});
+	socket.on('directMessage', message => {
+		socket.to(_Sockets[message.recipient]).emit('directMessage', message);
 	});
 
 	socket.on('disconnect', _ => {
-		console.log(`>>>: ${socket.id} user has disconnected`);
-		delete _Users[socket.id];
+		console.log(`>>> ${username} (${sid}) has disconnected`);
+		delete _Users[uid];
+		_Sockets = { ..._Sockets, [uid]: null };
 
 		io.emit('userChangeResponse', _Users);
 	});

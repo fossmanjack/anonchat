@@ -11,15 +11,15 @@ export default function ChatBar() {
 				<h4 className='chat__header'>Active Users</h4>
 				<div className='chat__users'>
 					{ Object.keys(users).sort((a, b) => {
-							let x = users[a].username;
-							let y = users[b].username;
+							let x = users[a];
+							let y = users[b];
 
 							if(x === username) return -1;
 							if(y === username) return 1;
 
 							return x > y ? 1 : x < y ? -1 : 0;
 						}).map(userKey => (
-						<p key={userKey}>{users[userKey].username}</p>
+						<p key={userKey}>{users[userKey]}</p>
 					))}
 				</div>
 			</div>
