@@ -10,6 +10,7 @@ const socketSlice = createSlice({
 	initialState,
 	reducers: {
 		setHostname: (sState, action) => {
+			console.log('setHostname:', action.payload);
 			return {
 				...sState,
 				hostname: action.payload

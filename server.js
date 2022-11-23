@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const chatRouter = require('./routes/chatRouter');
+const path = require('path');
 
 app.use(cors());
 
@@ -33,8 +35,11 @@ io.use((socket, next) => {
 	next();
 });
 
-io.on('connection', socket => {
-	const { uid, username, id: sid } = socket;
+io
+	.of('/socket')
+	.on('connection', socket => {
+		console.log('Socket info:', socket);
+		const { uid, username, sid: id } = socket;
 	console.log(`*** ${username} (${uid}) has connected with sid ${sid}`);
 	io.emit('userChangeResponse', _Users);
 
@@ -69,6 +74,12 @@ io.on('connection', socket => {
 		io.emit('userChangeResponse', _Users);
 	});
 });
+
+//app.use('/', chatRouter);
+
+//http.on('request', app);
+
+app.use('/', express.static(path.join(__dirname, 'client', 'build')));
 
 app.get('/api', (req, res) => {
 	res.json({

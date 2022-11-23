@@ -20,12 +20,13 @@ export function SocketProvider(props) {
 	// if hostname changes, update socket
 	useEffect(_ => {
 		if(isLoaded.current) {
-			console.log('Updating socket:', hostname);
+			console.log('socket.js: Updating socket:', hostname);
 			//hostname && setSocket(SocketIO.connect(hostname));
 			// instead let's control the connection manually when the user is
 			// logged in
 			hostname && setSocket(SocketIO.io(hostname, { autoConnect: false }));
 		} else {
+			console.log('socket.js: Initial load of socket set...');
 			isLoaded.current = true;
 		}
 	}, [ hostname ]);

@@ -21,6 +21,7 @@ export default function UserScreen() {
 
 	const handleSubmit = e => {
 		e.preventDefault();
+		console.log(`UserScreen: Submit: ${username} : ${hostname}`);
 		if(hostname !== reduxHost) dispatch(Socket.setHostname(hostname));
 		if(username !== reduxUser) dispatch(User.setUsername(username));
 		//dispatch(User.setUsername(username));
@@ -30,13 +31,15 @@ export default function UserScreen() {
 
 	useEffect(_ => {
 		if(reduxUser && socket.onAny) {
-			console.log('Attempting to connect with socketID', socket.id);
+			console.log('UserScreen: Attempting to connect with socket', socket.id, 'which has:', socket);
+			console.log(`UserScreen: I have the following user data:\n\tUsername: ${reduxUser}\n\tUID: ${uid}`);
 			socket.auth = { username: reduxUser, uid };
 			socket.connect();
 		}
 	}, [ reduxUser, socket ]);
 
 	useEffect(_ => {
+		console.log(`UserScreen: nav test\n\tSocket: ${socket}\n\tConnected: ${socket.connected}`);
 		if(socket && socket.connected) navigate('/chat');
 	}, [ socket, socket.connected, navigate ]);
 
